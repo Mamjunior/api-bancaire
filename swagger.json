@@ -1,0 +1,123 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Bancaire",
+    "description": "Système de dépôt et retrait bancaire",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "paths": {
+    "/comptes": {
+      "post": {
+        "summary": "Créer un compte",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nom": { "type": "string" },
+                  "soldeInitial": { "type": "number" }
+                },
+                "required": ["nom"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Compte créé" }
+        }
+      },
+      "get": {
+        "summary": "Lister tous les comptes",
+        "responses": {
+          "200": { "description": "Liste des comptes" }
+        }
+      }
+    },
+    "/comptes/{id}": {
+      "get": {
+        "summary": "Obtenir un compte par ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Compte trouvé" },
+          "404": { "description": "Compte introuvable" }
+        }
+      }
+    },
+    "/comptes/{id}/depot": {
+      "post": {
+        "summary": "Effectuer un dépôt",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "montant": { "type": "number" }
+                },
+                "required": ["montant"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Dépôt effectué" },
+          "400": { "description": "Montant invalide" }
+        }
+      }
+    },
+    "/comptes/{id}/retrait": {
+      "post": {
+        "summary": "Effectuer un retrait",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "montant": { "type": "number" }
+                },
+                "required": ["montant"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Retrait effectué" },
+          "400": { "description": "Solde insuffisant ou montant invalide" }
+        }
+      }
+    }
+  }
+}
