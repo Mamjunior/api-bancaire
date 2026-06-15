@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BankAPI — Mon Compte</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0D2B6E; --navy-d:#091F52; --navy-l:#1A4DB5;
+  --blue:#2563EB; --blue-l:#E8F0FE; --blue-m:#BFCFFA;
+  --green:#0A7A5A; --green-l:#D1FAE5;
+  --red:#C0392B; --red-l:#FEE2E2;
+  --white:#fff; --gray-50:#F8FAFC; --gray-100:#F1F5F9;
+  --gray-200:#E2E8F0; --gray-400:#94A3B8; --gray-600:#475569;
+  --text:#0F172A; --sans:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+}
+body{ font-family:var(--sans); background:var(--gray-50); color:var(--text); min-height:100vh; }
+
+/* ── TOPBAR ── */
+.topbar{
+  background:var(--navy);
+  color:white;
+  padding:0 32px;
+  height:60px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 8px rgba(9,31,82,.4);
+}
+.brand{ display:flex; align-items:center; gap:12px; }
+.brand-icon{ width:34px;height:34px;background:white;border-radius:8px;display:grid;place-items:center;font-size:18px; }
+.brand-name{ font-size:17px;font-weight:700;letter-spacing:-.02em; }
+.user-info{ display:flex;align-items:center;gap:14px;font-size:14px; }
+.user-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.2);
+  display:grid;place-items:center;font-size:15px;font-weight:700;
+}
+.btn-logout{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  color:white;padding:6px 14px;border-radius:7px;
+  font-family:var(--sans);font-size:13px;font-weight:500;
+  cursor:pointer;transition:background .15s;
+}
+.btn-logout:hover{ background:rgba(255,255,255,.2); }
+
+/* ── HERO SOLDE ── */
+.hero{
+  background:linear-gradient(135deg, var(--navy-d) 0%, var(--navy) 70%, var(--navy-l) 100%);
+  color:white;
+  padding:48px 32px;
+  text-align:center;
+}
+.hero-label{ font-size:13px;color:rgba(255,255,255,.6);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px; }
+.hero-solde{
+  font-family:var(--mono);
+  font-size:52px;
+  font-weight:500;
+  letter-spacing:-.02em;
+  transition:all .4s;
+}
+.hero-solde.flash-green{ color:#4ADE80; }
+.hero-solde.flash-red  { color:#F87171; }
+.hero-account{ font-size:13px;color:rgba(255,255,255,.5);margin-top:10px;font-family:var(--mono); }
+.hero-actions{
+  display:flex; gap:12px; justify-content:center; margin-top:32px;
+}
+.btn-hero{
+  padding:12px 28px;border-radius:10px;border:none;
+  font-family:var(--sans);font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:8px;
+}
+.btn-hero:active{ transform:scale(.97); }
+.btn-depot { background:#4ADE80;color:#064E3B; }
+.btn-depot:hover{ background:#22C55E; }
+.btn-retrait{ background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25); }
+.btn-retrait:hover{ background:rgba(255,255,255,.25); }
+
+/* ── MAIN ── */
+main{ max-width:960px; margin:0 auto; padding:32px; display:flex;flex-direction:column;gap:24px; }
+
+/* ── CARDS STAT ── */
+.stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.stat-card{
+  background:white; border:1px solid var(--gray-200);
+  border-radius:12px; padding:20px 22px;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.stat-label{ font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px; }
+.stat-val{ font-family:var(--mono);font-size:22px;font-weight:500;color:var(--navy); }
+.stat-sub{ font-size:12px;color:var(--gray-400);margin-top:6px; }
+
+/* ── PANEL ── */
+.panel{
+  background:white;border:1px solid var(--gray-200);
+  border-radius:12px;overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.panel-head{
+  padding:16px 20px;border-bottom:1px solid var(--gray-100);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{
+  font-size:14px;font-weight:600;color:var(--navy);
+  display:flex;align-items:center;gap:8px;
+}
+.panel-icon{
+  width:28px;height:28px;border-radius:7px;
+  display:grid;place-items:center;font-size:14px;
+}
+.bg-green{ background:var(--green-l); }
+.bg-red  { background:var(--red-l);   }
+.bg-blue { background:var(--blue-l);  }
+.panel-body{ padding:20px; }
+
+/* ── FORM ── */
+.form-group{ margin-bottom:16px; }
+.form-label{
+  display:block;font-size:12px;font-weight:700;
+  color:var(--gray-600);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:7px;
+}
+.form-input{
+  width:100%;padding:10px 13px;
+  border:1.5px solid var(--gray-200);border-radius:8px;
+  font-family:var(--sans);font-size:14px;color:var(--text);
+  transition:border-color .15s,box-shadow .15s;background:white;
+}
+.form-input:focus{
+  outline:none;border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(37,99,235,.1);
+}
+.form-input::placeholder{ color:var(--gray-400); }
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px 20px;border-radius:8px;border:none;
+  font-family:var(--sans);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .15s;width:100%;
+}
+.btn:active{ transform:scale(.97); }
+.btn:disabled{ opacity:.5;cursor:not-allowed;transform:none; }
+.btn-green-s{ background:var(--green);color:white; }
+.btn-green-s:hover{ background:#065F46; }
+.btn-red-s  { background:var(--red);color:white; }
+.btn-red-s:hover{ background:#991B1B; }
+.ops-grid{ display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+
+/* ── HISTORIQUE ── */
+.hist-table{ width:100%;border-collapse:collapse; }
+.hist-table th{
+  padding:10px 16px;text-align:left;
+  font-size:11px;font-weight:700;color:var(--gray-400);
+  text-transform:uppercase;letter-spacing:.07em;
+  background:var(--gray-50);border-bottom:1px solid var(--gray-200);
+}
+.hist-table td{
+  padding:14px 16px;font-size:13px;
+  border-bottom:1px solid var(--gray-100);
+}
+.hist-table tbody tr:last-child td{ border-bottom:none; }
+.hist-table tbody tr:hover td{ background:var(--gray-50); }
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:999px;
+  font-size:12px;font-weight:600;
+}
+.badge-green{ background:var(--green-l);color:var(--green); }
+.badge-red  { background:var(--red-l);  color:var(--red);   }
+.montant-green{ font-family:var(--mono);font-weight:500;color:var(--green); }
+.montant-red  { font-family:var(--mono);font-weight:500;color:var(--red);   }
+.solde-f{ font-family:var(--mono);font-size:13px;color:var(--gray-600); }
+.date-cell{ font-size:12px;color:var(--gray-400); }
+.empty-hist{ text-align:center;padding:40px 20px;color:var(--gray-400); }
+.empty-hist .ico{ font-size:32px;margin-bottom:10px; }
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(9,31,82,.5);
+  display:none;align-items:center;justify-content:center;z-index:200;
+  backdrop-filter:blur(2px);
+}
+.modal-overlay.open{ display:flex; }
+.modal{
+  background:white;border-radius:16px;padding:32px;
+  width:100%;max-width:400px;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn{
+  from{transform:scale(.95);opacity:0;}
+  to{transform:scale(1);opacity:1;}
+}
+.modal-title{ font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px; }
+.modal-sub{ font-size:13px;color:var(--gray-400);margin-bottom:24px; }
+.modal-actions{ display:flex;gap:10px;margin-top:20px; }
+.btn-cancel{
+  flex:1;padding:10px;background:var(--gray-100);border:none;
+  border-radius:8px;font-family:var(--sans);font-size:14px;
+  font-weight:600;color:var(--gray-600);cursor:pointer;
+}
+.btn-cancel:hover{ background:var(--gray-200); }
+.btn-confirm{ flex:1; }
+.alert-inline{
+  padding:10px 13px;border-radius:8px;font-size:13px;
+  font-weight:500;margin-bottom:14px;display:none;
+}
+.alert-inline.error  { background:var(--red-l);  color:var(--red);   display:block; }
+.alert-inline.success{ background:var(--green-l);color:var(--green); display:block; }
+
+/* ── SPINNER ── */
+.spinner{
+  width:15px;height:15px;
+  border:2px solid rgba(255,255,255,.3);border-top-color:white;
+  border-radius:50%;animation:spin .6s linear infinite;display:none;
+}
+@keyframes spin{ to{transform:rotate(360deg);} }
+
+/* ── TOAST ── */
+#toasts{
+  position:fixed;bottom:24px;right:24px;
+  display:flex;flex-direction:column;gap:8px;z-index:999;
+}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  background:var(--navy);color:white;border-radius:10px;
+  padding:12px 16px;font-size:13px;font-weight:500;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  animation:toastIn .2s ease;min-width:220px;
+  border-left:3px solid white;
+}
+.toast.success{ border-left-color:#4ADE80; }
+.toast.error  { border-left-color:#F87171; }
+@keyframes toastIn{
+  from{transform:translateY(8px);opacity:0;}
+  to{transform:translateY(0);opacity:1;}
+}
+@media(max-width:700px){
+  main{padding:16px;}
+  .stats{grid-template-columns:1fr;}
+  .ops-grid{grid-template-columns:1fr;}
+  .hero-solde{font-size:36px;}
+  .hero-actions{flex-direction:column;align-items:center;}
+  .topbar{padding:0 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🏦</div>
+    <span class="brand-name">BankAPI</span>
+  </div>
+  <div class="user-info">
+    <div class="user-avatar" id="avatar">?</div>
+    <span id="user-nom">Chargement...</span>
+    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Solde disponible</div>
+  <div class="hero-solde" id="hero-solde">— FCFA</div>
+  <div class="hero-account" id="hero-account">Compte #—</div>
+  <div class="hero-actions">
+    <button class="btn-hero btn-depot" onclick="openModal('depot')">↑ Déposer</button>
+    <button class="btn-hero btn-retrait" onclick="openModal('retrait')">↓ Retirer</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total déposé</div>
+      <div class="stat-val" id="s-depot">— FCFA</div>
+      <div class="stat-sub">Depuis l'ouverture</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total retiré</div>
+      <div class="stat-val" id="s-retrait">— FCFA</div>
+      <div class="stat-sub">Depuis l'ouverture</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Transactions</div>
+      <div class="stat-val" id="s-tx">—</div>
+      <div class="stat-sub">Opérations effectuées</div>
+    </div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div class="panel-icon bg-blue">📋</div>
+        Historique des transactions
+      </div>
+      <button style="background:none;border:1.5px solid var(--gray-200);color:var(--gray-600);padding:6px 12px;border-radius:7px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;" onclick="loadHistorique()">↻ Actualiser</button>
+    </div>
+    <table class="hist-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Montant</th>
+          <th>Solde après</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="hist-tbody">
+        <tr><td colspan="4"><div class="empty-hist"><div class="ico">⏳</div>Chargement...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- MODAL DÉPÔT -->
+<div class="modal-overlay" id="modal-depot">
+  <div class="modal">
+    <div class="modal-title">💰 Effectuer un dépôt</div>
+    <div class="modal-sub">Le montant sera ajouté à votre solde immédiatement.</div>
+    <div class="alert-inline" id="alert-depot"></div>
+    <div class="form-group">
+      <label class="form-label">Montant (FCFA)</label>
+      <input class="form-input" id="depot-montant" type="number" placeholder="Ex : 50 000" min="1"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('depot')">Annuler</button>
+      <button class="btn btn-green-s btn-confirm" onclick="doDepot()" id="btn-depot">
+        <span class="spinner" id="spin-depot"></span>
+        Valider le dépôt
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RETRAIT -->
+<div class="modal-overlay" id="modal-retrait">
+  <div class="modal">
+    <div class="modal-title">💸 Effectuer un retrait</div>
+    <div class="modal-sub">Le montant sera déduit de votre solde disponible.</div>
+    <div class="alert-inline" id="alert-retrait"></div>
+    <div class="form-group">
+      <label class="form-label">Montant (FCFA)</label>
+      <input class="form-input" id="retrait-montant" type="number" placeholder="Ex : 20 000" min="1"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('retrait')">Annuler</button>
+      <button class="btn btn-red-s btn-confirm" onclick="doRetrait()" id="btn-retrait">
+        <span class="spinner" id="spin-retrait"></span>
+        Valider le retrait
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+const API = 'https://api-bancaire-r9jo.onrender.com';
+
+// ── AUTH CHECK ──
+const token = localStorage.getItem('token');
+const user  = JSON.parse(localStorage.getItem('user') || 'null');
+if(!token || !user){ window.location.href = 'login.html'; }
+
+// ── INIT UI ──
+document.getElementById('user-nom').textContent  = user?.nom || '';
+document.getElementById('avatar').textContent    = (user?.nom || '?')[0].toUpperCase();
+
+// ── HELPERS ──
+const fmt = n => Number(n).toLocaleString('fr-FR') + ' FCFA';
+
+function toast(msg, type='success'){
+  const d = document.createElement('div');
+  d.className = `toast ${type}`;
+  d.innerHTML = `<span>${type==='success'?'✅':'❌'}</span><span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(d);
+  setTimeout(()=>d.remove(), 3500);
+}
+
+function authHeader(){ return { 'Content-Type':'application/json', 'Authorization':'Bearer '+token }; }
+
+function setLoad(btnId, spinId, on){
+  document.getElementById(btnId).disabled = on;
+  document.getElementById(spinId).style.display = on ? 'block' : 'none';
+}
+
+function showAlert(id, msg, type){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert-inline ${type}`;
+}
+
+// ── MODAL ──
+function openModal(type){
+  document.getElementById(`modal-${type}`).classList.add('open');
+  document.getElementById(`alert-${type}`).className = 'alert-inline';
+  document.getElementById(`${type}-montant`).value = '';
+  setTimeout(()=>document.getElementById(`${type}-montant`).focus(), 100);
+}
+function closeModal(type){
+  document.getElementById(`modal-${type}`).classList.remove('open');
+}
+
+// ── LOAD COMPTE ──
+async function loadCompte(){
+  try{
+    const r = await fetch(`${API}/comptes/moi`, { headers: authHeader() });
+    if(r.status === 401){ logout(); return; }
+    const data = await r.json();
+    const soldeEl = document.getElementById('hero-solde');
+    soldeEl.textContent = fmt(data.solde);
+    document.getElementById('hero-account').textContent = `Compte #${data.id} · ${user.email}`;
+    return data;
+  }catch(e){ toast('Impossible de joindre le serveur','error'); }
+}
+
+// ── LOAD HISTORIQUE ──
+async function loadHistorique(){
+  try{
+    const r = await fetch(`${API}/comptes/moi/historique`, { headers: authHeader() });
+    const data = await r.json();
+    const hist = data.historique || [];
+
+    // Stats
+    const depots   = hist.filter(h=>h.type==='depot').reduce((s,h)=>s+h.montant,0);
+    const retraits = hist.filter(h=>h.type==='retrait').reduce((s,h)=>s+h.montant,0);
+    document.getElementById('s-depot').textContent   = fmt(depots);
+    document.getElementById('s-retrait').textContent = fmt(retraits);
+    document.getElementById('s-tx').textContent      = hist.length;
+
+    const tbody = document.getElementById('hist-tbody');
+    if(!hist.length){
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-hist"><div class="ico">📭</div>Aucune transaction pour le moment.<br>Effectuez votre premier dépôt !</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = hist.map(h => {
+      const isDepot = h.type === 'depot';
+      const date = new Date(h.date);
+      const dateStr = date.toLocaleDateString('fr-FR') + ' à ' + date.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+      return `<tr>
+        <td><span class="badge ${isDepot?'badge-green':'badge-red'}">${isDepot?'↑ Dépôt':'↓ Retrait'}</span></td>
+        <td><span class="${isDepot?'montant-green':'montant-red'}">${isDepot?'+':'-'} ${fmt(h.montant)}</span></td>
+        <td><span class="solde-f">${fmt(h.soldeFinal)}</span></td>
+        <td><span class="date-cell">${dateStr}</span></td>
+      </tr>`;
+    }).join('');
+  }catch(e){ toast('Erreur lors du chargement de l\'historique','error'); }
+}
+
+// ── DÉPÔT ──
+async function doDepot(){
+  const montant = parseFloat(document.getElementById('depot-montant').value);
+  if(!montant||montant<=0){ showAlert('alert-depot','Montant invalide.','error'); return; }
+  setLoad('btn-depot','spin-depot',true);
+  try{
+    const r = await fetch(`${API}/comptes/moi/depot`, {
+      method:'POST', headers:authHeader(),
+      body: JSON.stringify({montant})
+    });
+    const data = await r.json();
+    if(r.ok){
+      closeModal('depot');
+      toast(`Dépôt de ${fmt(montant)} effectué ✅`,'success');
+      const soldeEl = document.getElementById('hero-solde');
+      soldeEl.textContent = fmt(data.solde);
+      soldeEl.classList.add('flash-green');
+      setTimeout(()=>soldeEl.classList.remove('flash-green'),1400);
+      loadHistorique();
+    } else { showAlert('alert-depot', data.erreur||'Erreur.','error'); }
+  }catch(e){ showAlert('alert-depot','Impossible de joindre le serveur.','error'); }
+  setLoad('btn-depot','spin-depot',false);
+}
+
+// ── RETRAIT ──
+async function doRetrait(){
+  const montant = parseFloat(document.getElementById('retrait-montant').value);
+  if(!montant||montant<=0){ showAlert('alert-retrait','Montant invalide.','error'); return; }
+  setLoad('btn-retrait','spin-retrait',true);
+  try{
+    const r = await fetch(`${API}/comptes/moi/retrait`, {
+      method:'POST', headers:authHeader(),
+      body: JSON.stringify({montant})
+    });
+    const data = await r.json();
+    if(r.ok){
+      closeModal('retrait');
+      toast(`Retrait de ${fmt(montant)} effectué`,'success');
+      const soldeEl = document.getElementById('hero-solde');
+      soldeEl.textContent = fmt(data.solde);
+      soldeEl.classList.add('flash-red');
+      setTimeout(()=>soldeEl.classList.remove('flash-red'),1400);
+      loadHistorique();
+    } else { showAlert('alert-retrait', data.erreur||'Erreur.','error'); }
+  }catch(e){ showAlert('alert-retrait','Impossible de joindre le serveur.','error'); }
+  setLoad('btn-retrait','spin-retrait',false);
+}
+
+// ── LOGOUT ──
+async function logout(){
+  try{ await fetch(`${API}/auth/logout`, {method:'POST', headers:authHeader()}); }catch(e){}
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+
+// ── INIT ──
+loadCompte();
+loadHistorique();
+</script>
+</body>
+</html>
